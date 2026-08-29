@@ -127,9 +127,9 @@ static void nimble_host_config_init(void)
     // Android 10+ требует LESC (sm_sc=1), иначе соединение разрывается
     // со статусом 0x08 (GATT CONN TIMEOUT) через 30 мс после connect.
     ble_hs_cfg.sm_io_cap = 0;       // NoInputNoOutput
-    ble_hs_cfg.sm_bonding = 0;       // No bonding
-    ble_hs_cfg.sm_our_key_dist = 0;  // No keys distributed
-    ble_hs_cfg.sm_their_key_dist = 0;
+    ble_hs_cfg.sm_bonding = 1;       // Enable bonding (matches Android expectation)
+    ble_hs_cfg.sm_our_key_dist = 1;  // Distribute LTK, IRK, CSRK
+    ble_hs_cfg.sm_their_key_dist = 1;
     ble_hs_cfg.sm_sc = 1;            // LE Secure Connections (required by Android)
     ble_hs_cfg.sm_mitm = 0;          // No MITM protection
 }
@@ -172,8 +172,12 @@ static int ble_nus_gap_event(struct ble_gap_event *event, void *arg)
                     .min_ce_len = 0,
                     .max_ce_len = 0,
                 };
-                ble_gap_update_params(s_conn_handle, &params);
-                ESP_LOGI(TAG, ">>> Connection params requested (30-50ms, latency=3, timeout=4s)");
+                int rc = ble_gap_update_params(s_conn_handle, &params);
+                if (rc != 0) {
+                    ESP_LOGW(TAG, ">>> Connection params update failed: %d", rc);
+                } else {
+                    ESP_LOGI(TAG, ">>> Connection params requested (30-50ms, latency=3, timeout=4s)");
+                }
             } else {
                 ESP_LOGE(TAG, "BLE connection failed, status=%d", event->connect.status);
                 ble_nus_start_advertising();

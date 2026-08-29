@@ -13,19 +13,25 @@ esp32-firmware/.ruff_cache/
 esp32-firmware/output/
 esp32-firmware/.pytest_cache/
 
+# Android
+android-app/.gradle/
+android-app/build/
+android-app/app/build/
+android-app/.idea/
+android-app/local.properties
+
 # OS files
 .DS_Store
 Thumbs.db
 *.swp
 *.swo
+*~
 
 # Logs
 *.log
 
-# Android
-android-app/.gradle/
-android-app/build/
-android-app/app/build/
-
 # Local configs
 *.local
+credentials.json
+secrets.*
+.env

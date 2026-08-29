@@ -1,0 +1,71 @@
+name: Bug Report
+
+description: Report a bug to help us improve
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Description
+        A clear and concise description of what the bug is.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of the bug
+      placeholder: Describe the bug here...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How to reproduce the bug
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Which version of the project has the bug?
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      options:
+        - ESP32 Firmware
+        - Android App
+        - Both
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Paste any relevant log output here
+      placeholder: |
+        ```
+        paste logs here
+        ```
+
+  - type: checkboxes
+    id: checkbox
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues
+          required: true
+        - label: I have included system info
