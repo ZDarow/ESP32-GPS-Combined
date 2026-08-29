@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ESP32 GPS</string>
+    <string name="status_disconnected">○ Отключено</string>
+    <string name="status_connected">● Подключено</string>
+    <string name="status_scanning">Поиск…</string>
+    <string name="btn_connect">Подключиться к ESP32</string>
+    <string name="btn_disconnect">Отключиться</string>
+    <string name="btn_clear_log">Очистить лог</string>
+    <string name="btn_start_track">Старт трек</string>
+    <string name="btn_stop_track">Стоп трек</string>
+    <string name="label_nmea_log">NMEA-лог</string>
+    <string name="label_waiting_fix">Ожидание GPS-фикса…</string>
+    <string name="label_no_coords">Нет координат</string>
+    <string name="cd_marker_title">ESP32 GPS</string>
+</resources>

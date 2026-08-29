@@ -1,0 +1,31 @@
+# Build artifacts
+*/build/
+*/.gradle/
+*/.idea/
+*.iml
+
+# ESP32 build
+esp32-firmware/build/
+esp32-firmware/sdkconfig
+esp32-firmware/sdkconfig.old
+esp32-firmware/.vscode/
+esp32-firmware/.ruff_cache/
+esp32-firmware/output/
+esp32-firmware/.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Android
+android-app/.gradle/
+android-app/build/
+android-app/app/build/
+
+# Local configs
+*.local

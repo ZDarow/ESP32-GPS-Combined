@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "ESP32GPSTracker dependency updates",
+  "timezone": "Europe/Moscow",
+  "schedule": ["before 9am on Monday"],
+  "labels": ["dependencies"],
+  "commitMessagePrefix": "deps:",
+  "prConcurrentLimit": 3,
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "description": "Nordic BLE packages",
+      "matchPackagePatterns": ["no.nordicsemi.android:ble*"],
+      "groupName": "nordic-ble",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Jetpack Compose",
+      "matchPackagePatterns": ["androidx.compose.*", "androidx.lifecycle.compose:*"],
+      "groupName": "compose-bom",
+      "schedule": ["before 9am on Monday"]
+    },
+    {
+      "description": "OSMDroid",
+      "matchPackagePatterns": ["org.osmdroid:*"],
+      "groupName": "osmdroid",
+      "automerge": true
+    },
+    {
+      "description": "Kotlin and Coroutines",
+      "matchPackagePatterns": ["org.jetbrains.kotlin*", "org.jetbrains.kotlinx:kotlinx-coroutines*"],
+      "groupName": "kotlin"
+    },
+    {
+      "description": "Linters",
+      "matchPackagePatterns": ["io.gitlab.arturbosch.detekt", "org.jlleitschuh.gradle.ktlint"],
+      "groupName": "linters",
+      "automerge": true
+    }
+  ]
+}
