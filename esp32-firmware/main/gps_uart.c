@@ -6,6 +6,7 @@
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_task_wdt.h"
 #include <string.h>
 
 static const char *TAG = "GPS_UART";
@@ -34,6 +35,8 @@ static void gps_uart_task(void *arg)
     int64_t last_stats_time = esp_timer_get_time();
 
     ESP_LOGI(TAG, "UART task started. Waiting for GPS data...");
+
+    esp_task_wdt_add(NULL);
 
     while (1) {
         int len = uart_read_bytes(GPS_UART_NUM, rx_buf, sizeof(rx_buf), pdMS_TO_TICKS(100));
@@ -109,6 +112,7 @@ static void gps_uart_task(void *arg)
                      s_queue_send_count, s_queue_fail_count);
             last_stats_time = now;
         }
+        esp_task_wdt_reset();
     }
 }
 

@@ -4,6 +4,8 @@
 #include "gps_uart.h"
 #include "os/os_mbuf.h"
 #include "esp_log.h"
+#include "esp_task_wdt.h"
+#include "power_manager.h"
 #include "esp_err.h"
 #include <stdlib.h>
 #include "freertos/FreeRTOS.h"
@@ -162,7 +164,7 @@ static int ble_nus_gap_event(struct ble_gap_event *event, void *arg)
                 ESP_LOGI(TAG, ">>> BLE connected, handle=%d", s_conn_handle);
 
                 // Reset idle timer on connect to prevent deep sleep
-                extern void power_register_activity(void);
+                
                 power_register_activity();
 
                 // Request stable connection params to prevent Android timeouts
@@ -282,8 +284,10 @@ static int ble_nus_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
 
 void ble_nus_status_task(void *arg)
 {
+    esp_task_wdt_add(NULL);
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(5000));
+        esp_task_wdt_reset();
 
         BLE_STATE_LOCK();
         bool connected = s_connected;
@@ -299,7 +303,7 @@ void ble_nus_status_task(void *arg)
         if (rc == 0) {
             ESP_LOGI(TAG, "status: connection OK handle=%d", desc.conn_handle);
             // Reset idle timer on successful status check
-            extern void power_register_activity(void);
+            
             power_register_activity();
         } else {
             ESP_LOGW(TAG, "status: connection lost, rc=%d. Resetting state", rc);
@@ -318,6 +322,22 @@ void ble_nus_status_task(void *arg)
             ble_nus_set_battery_level(new_level);
         }
     }
+}
+
+void ble_nus_prepare_deep_sleep(void)
+{
+    // E5 (embedded-аудит): перед глубоким сном корректно разорвать BLE-соединение
+    // и остановить advertising, чтобы не оставлять GATT/радио в несогласованном состоянии.
+    BLE_STATE_LOCK();
+    bool connected = s_connected;
+    uint16_t conn_handle = s_conn_handle;
+    BLE_STATE_UNLOCK();
+
+    if (connected && conn_handle != BLE_HS_CONN_HANDLE_NONE) {
+        // 0x13 = BLE_ERR_REM_USER_CONN_TERM
+        ble_gap_terminate(conn_handle, 0x13);
+    }
+    ble_gap_adv_stop();
 }
 
 static void ble_nus_add_service(void)
@@ -549,7 +569,7 @@ int ble_nus_send_from_queue(QueueHandle_t queue, int max_lines)
             total_bytes += line_len;
             lines_sent++;
             // Update idle timer on successful data send
-            extern void power_register_activity(void);
+            
             power_register_activity();
             // 20ms is enough since notify_raw already has 5ms internal delay
             vTaskDelay(pdMS_TO_TICKS(20));

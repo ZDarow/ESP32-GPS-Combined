@@ -14,6 +14,7 @@ esp_err_t ble_nus_init(void);
 esp_err_t ble_nus_start_advertising(void);
 bool ble_nus_is_connected(void);
 void ble_nus_status_task(void *arg);
+void ble_nus_prepare_deep_sleep(void);
 
 /**
  * @brief Отправить NMEA строки из FreeRTOS очереди через BLE
