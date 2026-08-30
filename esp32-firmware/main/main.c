@@ -76,8 +76,11 @@ static void on_gps_line(const char *line, size_t len) {
 void app_main(void) {
     ESP_LOGI(TAG, "Simplified BLE GNSS tracker starting");
 
-    // E1 (embedded-аудит): Task Watchdog. idle-задачи обеих ядер кормят WDT;
-    // любой spin/зависание задачи, не дающей планировщику работать, => ребут.
+    // E1 (embedded-аудит): Task Watchdog. TWDT может уже быть включен через
+    // CONFIG_ESP_TASK_WDT в sdkconfig — пересоздаём с явными параметрами
+    // (таймаут 10 с, idle-задачи обеих ядер кормят WDT). Повторный init без
+    // деинициализации даёт ESP_ERR_INVALID_STATE и abort.
+    esp_task_wdt_deinit();
     esp_task_wdt_config_t wdt_cfg = {
         .timeout_ms = 10000,
         .idle_core_mask = 0x03,
