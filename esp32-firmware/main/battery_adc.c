@@ -6,10 +6,10 @@
 static const char *TAG = "battery_adc";
 static adc_oneshot_unit_handle_t s_adc1_handle;
 
-// ADC-канал вычисляется из BATTERY_ADC_PIN (GPIO4 = ADC1_CH3),
-// чтобы app_config.h оставался единственным источником истины для пинов.
-static const adc_channel_t s_battery_adc_channel =
-    ADC_CHANNEL_GPIO_TO_CHANNEL(BATTERY_ADC_PIN);
+// Канал ADC для BATTERY_ADC_PIN: GPIO4 = ADC1_CH3 (источник истины — app_config.h).
+// Макрос ADC_CHANNEL_GPIO_TO_CHANNEL удалён в IDF v6.0.2 (legacy driver/adc.h),
+// поэтому используем adc_channel_t напрямую.
+static const adc_channel_t s_battery_adc_channel = ADC_CHANNEL_3;
 
 static float s_battery_min_v = BATTERY_MIN_VOLTAGE;
 static float s_battery_max_v = BATTERY_MAX_VOLTAGE;
@@ -28,7 +28,7 @@ void battery_adc_init(void)
     // BATTERY_ADC_PIN = GPIO4 = ADC1_CH3 (источник истины — app_config.h)
     ESP_ERROR_CHECK(adc_oneshot_config_channel(s_adc1_handle, s_battery_adc_channel, &chan_cfg));
     ESP_LOGI(TAG, "Battery ADC initialized on GPIO%d (ADC1_CH%d)", BATTERY_ADC_PIN,
-             ADC_CHANNEL_GPIO_TO_CHANNEL(BATTERY_ADC_PIN) + 1);
+             ADC_CHANNEL_3);
 }
 
 float battery_read_voltage(void)
