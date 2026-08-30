@@ -14,7 +14,7 @@ static const char *TAG = "power";
 static uint32_t s_last_activity_ms = 0;
 
 void power_register_activity(void) {
-    s_last_activity_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
+    s_last_activity_ms = xTaskGetTickCount() * pdMS_TO_TICKS(1);
 }
 
 void power_manager_init(void) {
@@ -31,7 +31,7 @@ void power_manager_init(void) {
     // Wakeup по LOW на GPIO5 (кнопка на GND)
     esp_sleep_enable_ext0_wakeup((gpio_num_t)DEEP_SLEEP_BTN_PIN, 0);
 
-    s_last_activity_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
+    s_last_activity_ms = xTaskGetTickCount() * pdMS_TO_TICKS(1);
     ESP_LOGI(TAG, "Power manager initialized, GPIO%d as wakeup button", DEEP_SLEEP_BTN_PIN);
 }
 

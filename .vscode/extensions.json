@@ -1,0 +1,30 @@
+{
+  "recommendations": [
+    "espressif.esp-idf-vscode",
+    "ms-vscode.cpptools",
+    "ms-vscode.cmake-tools",
+    "redhat.java",
+    "dotupotlin.kotlin",
+    "JetBrains.kotlin",
+    "ms-kotlin-tools.gradle-toolkit",
+    "vmware.vscode-kotlin-gradle",
+    "ms-python.python",
+    "charliermarsh.ruff",
+    "ms-python.vscode-pylance",
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "James-Yu.github-actions",
+    "ms-vscode.docker",
+    "streetsupport.software-vscode-markdownlint",
+    "ms-vscode.vscode-icons",
+    "humtl.diff",
+    "ms-vscode.live-server",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.json-language-features",
+    "ms-vscode.git-lens",
+    "ms-vscode.git-graph",
+    "GitHub.copilot",
+    "ms-playwright.playwright",
+    "oderlolo.copilot-mcp"
+  ]
+}

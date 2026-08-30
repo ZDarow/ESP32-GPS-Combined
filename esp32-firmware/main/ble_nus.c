@@ -356,15 +356,12 @@ static void ble_nus_add_service(void)
 
 esp_err_t ble_nus_init(void)
 {
-    // Стираем NVS чтобы убрать остатки старых сервисов (ae00) и bonding keys.
-    // Это одноразовая операция — при следующих запусках NVS будет чистым.
+    // NVS: обрабатываем только стандартные ошибки (нет свободных страниц / новая версия),
+    // но НЕ стираем NVS принуждёно — иначе bonding keys пропадут при каждом старте,
+    // и пользователю придётся сопрягать устройство заново.
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    // Принудительно стираем NVS для чистой конфигурации BLE
-    if (ret == ESP_OK) {
+        ESP_LOGW(TAG, "NVS init issue (%s), erasing NVS and retrying", esp_err_to_name(ret));
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
@@ -487,27 +484,6 @@ static esp_err_t ble_nus_notify_raw(const uint8_t *data, int len)
     }
 
     return ESP_OK;
-}
-
-esp_err_t ble_nus_send_nmea(const char *nmea_str, int len)
-{
-    BLE_STATE_LOCK();
-    if (!s_connected || s_conn_handle == BLE_HS_CONN_HANDLE_NONE) {
-        BLE_STATE_UNLOCK();
-        ESP_LOGE(TAG, "BLE send skipped: connected=%d conn_handle=%d", s_connected, s_conn_handle);
-        return ESP_FAIL;
-    }
-    BLE_STATE_UNLOCK();
-
-    ESP_LOGI(TAG, "Sending NMEA direct: len=%d", len);
-
-    esp_err_t rc = ble_nus_notify_raw((const uint8_t *)nmea_str, len);
-    if (rc == ESP_OK) {
-        ESP_LOGI(TAG, "BLE direct send OK: %d bytes", len);
-    } else {
-        ESP_LOGE(TAG, "BLE direct send FAILED: %s", esp_err_to_name(rc));
-    }
-    return rc;
 }
 
 int ble_nus_send_from_queue(QueueHandle_t queue, int max_lines)

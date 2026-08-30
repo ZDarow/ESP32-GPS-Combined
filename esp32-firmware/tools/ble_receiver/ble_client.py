@@ -51,7 +51,9 @@ class BleNusClient:
             logger.info("Connected, subscribing to notifications...")
             for attempt in range(3):
                 try:
-                    await client.start_notify(config.NUS_TX_CHAR_UUID, self._notification_handler)
+                    await client.start_notify(
+                        config.NUS_TX_CHAR_UUID, self._notification_handler
+                    )
                     break
                 except BleakError as e:
                     logger.warning("Subscribe attempt %d failed: %s", attempt + 1, e)
@@ -65,7 +67,9 @@ class BleNusClient:
                 await asyncio.sleep(1)
                 now = asyncio.get_event_loop().time()
                 if now - self._last_data_time > config.DATA_TIMEOUT:
-                    logger.warning("No data received for %d seconds", config.DATA_TIMEOUT)
+                    logger.warning(
+                        "No data received for %d seconds", config.DATA_TIMEOUT
+                    )
                     self._last_data_time = now
 
     def _notification_handler(self, sender, data: bytearray):

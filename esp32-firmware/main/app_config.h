@@ -12,6 +12,10 @@
 #define GPS_UART_RX_BUF     2048
 #define GPS_DATA_TIMEOUT_MS 5000
 
+// GPS RAW debug (0=выкл, 1=вкл). Включайте только для short debugging sessions.
+#define GPS_RAW_DEBUG      0
+#define GPS_RAW_DEBUG_LIMIT 50
+
 // Battery ADC (GPIO4 - ADC1_CH3, свободный)
 #define BATTERY_ADC_PIN         4
 #define BATTERY_VOLTAGE_DIVIDER 2.0f

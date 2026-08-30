@@ -12,7 +12,6 @@ extern "C" {
 
 esp_err_t ble_nus_init(void);
 esp_err_t ble_nus_start_advertising(void);
-esp_err_t ble_nus_send_nmea(const char *nmea_str, int len);
 bool ble_nus_is_connected(void);
 void ble_nus_status_task(void *arg);
 

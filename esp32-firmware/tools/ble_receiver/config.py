@@ -1,5 +1,11 @@
-DEVICE_MAC = "7C:4F:AD:BB:E2:12"
-DEVICE_NAME = "ESP32S3-GPS"
+import os
+
+# BLE-подключение: MAC-адрес и имя устройства.
+# DEVICE_MAC — конкретный MAC, DEVICE_NAME — фильтр по имени (для сканеров).
+# Оба значения можно переопределить через переменные окружения.
+DEVICE_MAC = os.environ.get("ESP32_DEVICE_MAC", "7C:4F:AD:BB:E2:12")
+DEVICE_NAME = os.environ.get("ESP32_DEVICE_NAME", "ESP32S3-GPS")
+
 NUS_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
 NUS_TX_CHAR_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
 NUS_RX_CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"

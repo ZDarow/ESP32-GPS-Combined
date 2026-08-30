@@ -13,10 +13,21 @@ class TrackLogger:
         self._lock = threading.Lock()
         with open(self.filename, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["local_time", "utc_time", "lat", "lon", "speed_kmh", "valid"])
+            writer.writerow(
+                ["local_time", "utc_time", "lat", "lon", "speed_kmh", "valid"]
+            )
 
     def log(self, utc_time: str, lat: float, lon: float, speed_kmh: float, valid: bool):
         local_time = datetime.now().astimezone().strftime("%H:%M:%S")
         with self._lock, open(self.filename, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow([local_time, utc_time, f"{lat:.6f}", f"{lon:.6f}", f"{speed_kmh:.1f}", int(valid)])
+            writer.writerow(
+                [
+                    local_time,
+                    utc_time,
+                    f"{lat:.6f}",
+                    f"{lon:.6f}",
+                    f"{speed_kmh:.1f}",
+                    int(valid),
+                ]
+            )

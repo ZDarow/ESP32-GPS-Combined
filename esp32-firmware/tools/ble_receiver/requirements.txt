@@ -1,1 +1,7 @@
 bleak>=0.22.0
+# WinRT (Windows BLE API) — используется в main_winrt.py, ble_winrt_test.py, ble_winrt_simple.py
+winrt-runtime>=3.2.0
+winrt-windows-devices-bluetooth>=3.2.0
+winrt-windows-devices-bluetooth-genericattributeprofile>=3.2.0
+winrt-windows-devices-enumeration>=3.2.0
+winrt-windows-foundation>=3.2.0

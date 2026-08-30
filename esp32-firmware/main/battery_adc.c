@@ -6,6 +6,11 @@
 static const char *TAG = "battery_adc";
 static adc_oneshot_unit_handle_t s_adc1_handle;
 
+// ADC-канал вычисляется из BATTERY_ADC_PIN (GPIO4 = ADC1_CH3),
+// чтобы app_config.h оставался единственным источником истины для пинов.
+static const adc_channel_t s_battery_adc_channel =
+    ADC_CHANNEL_GPIO_TO_CHANNEL(BATTERY_ADC_PIN);
+
 static float s_battery_min_v = BATTERY_MIN_VOLTAGE;
 static float s_battery_max_v = BATTERY_MAX_VOLTAGE;
 
@@ -20,14 +25,16 @@ void battery_adc_init(void)
         .atten = ADC_ATTEN_DB_12,
         .bitwidth = ADC_BITWIDTH_12,
     };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(s_adc1_handle, ADC_CHANNEL_2, &chan_cfg));
-    ESP_LOGI(TAG, "Battery ADC initialized on GPIO%d", BATTERY_ADC_PIN);
+    // BATTERY_ADC_PIN = GPIO4 = ADC1_CH3 (источник истины — app_config.h)
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(s_adc1_handle, s_battery_adc_channel, &chan_cfg));
+    ESP_LOGI(TAG, "Battery ADC initialized on GPIO%d (ADC1_CH%d)", BATTERY_ADC_PIN,
+             ADC_CHANNEL_GPIO_TO_CHANNEL(BATTERY_ADC_PIN) + 1);
 }
 
 float battery_read_voltage(void)
 {
     int adc_raw = 0;
-    ESP_ERROR_CHECK(adc_oneshot_read(s_adc1_handle, ADC_CHANNEL_2, &adc_raw));
+    ESP_ERROR_CHECK(adc_oneshot_read(s_adc1_handle, s_battery_adc_channel, &adc_raw));
     float voltage = (adc_raw * 3.3f / 4095.0f) * BATTERY_VOLTAGE_DIVIDER;
     return voltage;
 }

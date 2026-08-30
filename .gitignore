@@ -27,6 +27,21 @@ Thumbs.db
 *.swo
 *~
 
+# Python virtual environments
+*/.venv/
+venv/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ESP-IDF test build artifacts
+esp32-firmware/test/build/
+esp32-firmware/test/unity/
+
 # Logs
 *.log
 
@@ -35,3 +50,6 @@ Thumbs.db
 credentials.json
 secrets.*
 .env
+
+# Личные настройки VS Code (не коммитим)
+.vscode/settings.json

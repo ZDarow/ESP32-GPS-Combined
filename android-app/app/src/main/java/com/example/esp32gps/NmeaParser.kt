@@ -37,6 +37,9 @@ object NmeaParser {
         val trimmed = line.trim()
         if (trimmed.isEmpty() || !trimmed.startsWith("$")) return previousFix
 
+        // Validate checksum (must match C nmea_parser_feed() behaviour).
+        if (!validateChecksum(trimmed)) return previousFix
+
         // Remove checksum (*XX)
         val noChecksum = trimmed.substringBeforeLast("*")
         val parts = noChecksum.split(",")
@@ -47,6 +50,27 @@ object NmeaParser {
             parts[0].endsWith("GGA") -> parseGga(parts, trimmed, previousFix)
             else -> previousFix
         }
+    }
+
+    /**
+     * Validates the NMEA 0183 checksum (*XX at the end of the sentence).
+     * Mirrors [nmea_checksum] in components/nmea_parser/src/nmea_parser.c so that
+     * Android and ESP32 reject the same corrupted sentences.
+     */
+    private fun validateChecksum(sentence: String): Boolean {
+        val star = sentence.indexOf('*')
+        if (star < 0) return false
+        val dataPart = sentence.substring(0, star)
+        if (!dataPart.startsWith("$")) return false
+        val checksumHex = sentence.substring(star + 1)
+        if (checksumHex.isEmpty()) return false
+        val computed = dataPart.drop(1).fold(0) { acc, c -> acc xor c.code }
+        val received = try {
+            Integer.parseInt(checksumHex.take(2), 16)
+        } catch (_: NumberFormatException) {
+            return false
+        }
+        return computed == received
     }
 
     /**

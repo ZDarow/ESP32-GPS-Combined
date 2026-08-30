@@ -2,7 +2,9 @@ import sys
 import os
 
 # Добавляем путь к tools/ble_receiver для импорта
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'tools', 'ble_receiver'))
+sys.path.insert(
+    0, os.path.join(os.path.dirname(__file__), "..", "tools", "ble_receiver")
+)
 
 from nmea_parser import validate_checksum, parse_rmc
 
