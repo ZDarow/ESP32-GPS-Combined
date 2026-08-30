@@ -12,9 +12,6 @@ import no.nordicsemi.android.ble.data.Data
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
-private const val PHY_LE_2M = 0x02
-private const val PHY_OPTION_NONE = 0x00
-
 class GpsBleManager(
     context: Context
 ) : BleManager(context) {
@@ -41,11 +38,9 @@ class GpsBleManager(
 
     override fun initialize() {
         requestMtu(256).enqueue()
-        try {
-            setPreferredPhy(PHY_LE_2M, PHY_LE_2M, PHY_OPTION_NONE)
-        } catch (t: Throwable) {
-            Log.w(TAG, "setPreferredPhy failed: ${t.message}")
-        }
+        // Переключение на 2M PHY не запрашиваем принудительно: ряд Android-
+        // устройств нестабильно обрабатывает смену PHY и сбрасывает соединение.
+        // 1M PHY достаточно для NMEA-потока (несколько сотен байт/с).
     }
 
     override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
@@ -79,12 +74,15 @@ class GpsBleManager(
     override fun onDeviceReady() {
         super.onDeviceReady()
 
-        // Verify bonding status for security
+        // NUS-сервис не защищён шифрованием (характеристики TX/RX открыты),
+        // поэтому сопряжение (bonding) НЕ требуется для передачи NMEA-данных.
+        // Ранее здесь стояла жёсткая проверка BOND_BONDED с return — она
+        // блокировала работу, т.к. ни Android, ни Nordic BleManager не
+        // инициируют pairing к открытым характеристикам, и bondState всегда
+        // оставался BOND_NONE. Теперь продолжаем работу независимо от bonding.
         val bondState = bluetoothDevice?.bondState
         if (bondState != BluetoothDevice.BOND_BONDED) {
-            Log.w(TAG, "Device not bonded. Bond state: $bondState")
-            onError?.invoke("Устройство не сопряжено. Выполните сопряжение в настройках Bluetooth.")
-            return
+            Log.w(TAG, "Device not bonded (state=$bondState). Продолжаем без сопряжения — NUS открыт.")
         }
 
         onConnectionStateChanged?.invoke(true)
