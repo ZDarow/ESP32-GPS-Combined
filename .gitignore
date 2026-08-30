@@ -11,6 +11,7 @@ esp32-firmware/sdkconfig.old
 esp32-firmware/.vscode/
 esp32-firmware/.ruff_cache/
 esp32-firmware/output/
+esp32-firmware/tools/ble_receiver/output/
 esp32-firmware/.pytest_cache/
 
 # Android

@@ -10,6 +10,7 @@ data class GpsFix(
     val fixQuality: Int = 0,
     val hdop: Double = 0.0,
     val timestampUtc: String? = null,
+    val dateUtc: String? = null,
     val valid: Boolean = false,
     val rawNmea: String = "",
     val batteryLevel: Int? = null

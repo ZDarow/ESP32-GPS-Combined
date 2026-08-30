@@ -68,7 +68,7 @@ class GpxLogger(
         val lon = fix.longitude ?: return
         if (!fix.valid) return
         try {
-            val time = fix.timestampUtc?.let { parseUtcToIso(it) } ?: nowIso8601()
+            val time = toIso(fix.dateUtc, fix.timestampUtc)
             val trkpt =
                 String.format(
                     Locale.US,
@@ -104,17 +104,24 @@ class GpxLogger(
     }
 
     /**
-     * Parses NMEA UTC time (HHmmss.SS) and returns ISO 8601 timestamp string.
-     * Thread-safe using DateTimeFormatter.
+     * Формирует ISO 8601 из даты (DDMMYY) и времени (HHmmss.SS) NMEA.
+     * При отсутствии полей — текущее время UTC.
      */
-    private fun parseUtcToIso(hhmmss: String): String? =
-        try {
-            val today = LocalDate.now(ZoneOffset.UTC)
-            val time = LocalTime.from(utcTimeFormatter.parse(hhmmss))
-            val dateTime = LocalDateTime.of(today, time).atZone(ZoneOffset.UTC)
-            isoDateTimeFormatter.format(dateTime)
-        } catch (_: Exception) {
-            null
+    private fun toIso(date: String?, time: String?): String =
+        if (date.isNullOrEmpty() || time.isNullOrEmpty()) {
+            nowIso8601()
+        } else {
+            try {
+                val d = LocalDate.of(
+                    2000 + date.substring(4, 6).toInt(),
+                    date.substring(2, 4).toInt(),
+                    date.substring(0, 2).toInt()
+                )
+                val t = LocalTime.from(utcTimeFormatter.parse(time))
+                isoDateTimeFormatter.format(LocalDateTime.of(d, t).atZone(ZoneOffset.UTC))
+            } catch (_: Exception) {
+                nowIso8601()
+            }
         }
 
     /**

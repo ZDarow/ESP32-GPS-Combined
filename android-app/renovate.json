@@ -12,7 +12,7 @@
       "description": "Nordic BLE packages",
       "matchPackagePatterns": ["no.nordicsemi.android:ble*"],
       "groupName": "nordic-ble",
-      "automerge": true,
+      "automerge": false,
       "automergeType": "pr"
     },
     {
@@ -25,7 +25,7 @@
       "description": "OSMDroid",
       "matchPackagePatterns": ["org.osmdroid:*"],
       "groupName": "osmdroid",
-      "automerge": true
+      "automerge": false
     },
     {
       "description": "Kotlin and Coroutines",

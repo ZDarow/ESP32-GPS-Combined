@@ -26,3 +26,9 @@ jobs:
 
       - name: Markdown Lint
         run: markdownlint '**/*.md' || true
+
+      - name: Python tests (NMEA parser)
+        run: |
+          cd esp32-firmware
+          pip install pytest
+          python -m pytest tests/test_nmea_parser.py -v

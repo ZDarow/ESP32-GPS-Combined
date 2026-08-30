@@ -1,8 +1,11 @@
 #include "ble_nus.h"
 #include "app_config.h"
 #include "battery_adc.h"
+#include "gps_uart.h"
+#include "os/os_mbuf.h"
 #include "esp_log.h"
 #include "esp_err.h"
+#include <stdlib.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "nimble/ble.h"
@@ -262,7 +265,15 @@ static int ble_nus_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
 
     if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
         uint16_t len = ctxt->om->om_len;
-        ESP_LOGI(TAG, "RX write %u bytes", len);
+        if (len > 0 && len <= 64) {
+            uint8_t buf[64];
+            os_mbuf_copydata(ctxt->om, 0, len, buf);
+            ESP_LOGI(TAG, "RX command (%u bytes): %.*s", len, len, buf);
+            // Пересылаем полученную команду в GPS-UART (pass-through).
+            gps_uart_send_raw(buf, len);
+        } else {
+            ESP_LOGW(TAG, "RX write: некорректная длина %u", len);
+        }
         return 0;
     }
 
@@ -300,12 +311,12 @@ void ble_nus_status_task(void *arg)
             ble_nus_start_advertising();
         }
 
-        // Battery level отключён (Battery Service удалён, чтобы избежать
-        // двойной регистрации характеристики 0x2A19 в NimBLE).
-        // uint8_t new_level = battery_read_percentage();
-        // if (abs((int)new_level - (int)s_last_reported_battery) >= 5) {
-        //     ble_nus_set_battery_level(new_level);
-        // }
+        // Battery Level: читаем ADC и шлём notify при изменении >=5%.
+        uint8_t new_level = battery_read_percentage();
+        if (s_last_reported_battery == 0xFF ||
+            abs((int)new_level - (int)s_last_reported_battery) >= 5) {
+            ble_nus_set_battery_level(new_level);
+        }
     }
 }
 
@@ -317,12 +328,12 @@ static void ble_nus_add_service(void)
                                             0x93, 0xF3, 0xA3, 0xB5, 0x03, 0x00, 0x40, 0x6E);
     s_nus_rx_char_uuid = (ble_uuid128_t)BLE_UUID128_INIT(0x9E, 0xCA, 0xDC, 0x24, 0x0E, 0xE5, 0xA9, 0xE0,
                                             0x93, 0xF3, 0xA3, 0xB5, 0x02, 0x00, 0x40, 0x6E);
-    s_battery_service_uuid = (ble_uuid128_t)BLE_UUID128_INIT(0xFB, 0x34, 0x9B, 0x05, 0x80, 0x00, 0x00, 0x10,
-                                                 0x00, 0x00, 0x0F, 0x18, 0x00, 0x00, 0x00, 0x00);
-    s_battery_level_char_uuid = (ble_uuid128_t)BLE_UUID128_INIT(0xFB, 0x34, 0x9B, 0x05, 0x80, 0x00, 0x00, 0x10,
-                                                   0x00, 0x00, 0x19, 0x2A, 0x00, 0x00, 0x00, 0x00);
+    s_battery_service_uuid = (ble_uuid128_t)BLE_UUID128_INIT(0xFB, 0x34, 0x9B, 0x5F, 0x00, 0x80, 0x00, 0x80,
+                                                  0x00, 0x10, 0x00, 0x00, 0x0F, 0x18, 0x00, 0x00);
+    s_battery_level_char_uuid = (ble_uuid128_t)BLE_UUID128_INIT(0xFB, 0x34, 0x9B, 0x5F, 0x00, 0x80, 0x00, 0x80,
+                                                    0x00, 0x10, 0x00, 0x00, 0x19, 0x2A, 0x00, 0x00);
 
-    static const struct ble_gatt_chr_def chr_defs[] = {
+    static const struct ble_gatt_chr_def nus_chr_defs[] = {
         {
             .uuid = &s_nus_tx_char_uuid.u,
             .access_cb = ble_nus_gatt_access,
@@ -338,11 +349,26 @@ static void ble_nus_add_service(void)
         {0},
     };
 
+    static const struct ble_gatt_chr_def battery_chr_defs[] = {
+        {
+            .uuid = &s_battery_level_char_uuid.u,
+            .access_cb = ble_nus_gatt_access,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+            .val_handle = &s_battery_level_val_handle,
+        },
+        {0},
+    };
+
     static const struct ble_gatt_svc_def svc_defs[] = {
         {
             .type = BLE_GATT_SVC_TYPE_PRIMARY,
             .uuid = &s_nus_service_uuid.u,
-            .characteristics = chr_defs,
+            .characteristics = nus_chr_defs,
+        },
+        {
+            .type = BLE_GATT_SVC_TYPE_PRIMARY,
+            .uuid = &s_battery_service_uuid.u,
+            .characteristics = battery_chr_defs,
         },
         {0},
     };

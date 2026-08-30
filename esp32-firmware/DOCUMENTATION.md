@@ -2,7 +2,7 @@
 
 > **Project:** esp32s3-gnss  
 > **Target:** ESP32-S3 DevKitC-1 (Rev 2, 16MB QIO, без PSRAM)  
-> **Framework:** ESP-IDF v5.5.5  
+> **Framework:** ESP-IDF v6.0.2  
 > **Language:** C (FreeRTOS, NimBLE)  
 > **Last updated:** 2026-08-17
 
@@ -36,7 +36,7 @@ The ESP32-S3 GNSS Tracker is a low-power BLE beacon that receives NMEA sentences
 | **Power** | 18650 Li-ion + DC-DC buck converter |
 | **BLE** | NimBLE stack (Bluetooth 5.0, LE 2M PHY) |
 | **Battery ADC** | ADC1_CH2 (GPIO2) |
-| **Deep-sleep button** | GPIO0 (active LOW) |
+| **Deep-sleep button** | GPIO5 (active LOW) |
 
 ### 1.3 Software Stack
 
@@ -140,7 +140,7 @@ Central configuration header defining hardware pins, baud rates, timeouts, and B
 | `GPS_DATA_TIMEOUT_MS` | `5000` | No-data warning threshold |
 | `GPS_RAW_DEBUG` | `1` | Enable raw byte logging (first 200 bytes) |
 | `BATTERY_ADC_PIN` | `2` | ADC1 channel 2 |
-| `DEEP_SLEEP_BTN_PIN` | `0` | Boot button (GPIO0) |
+| `DEEP_SLEEP_BTN_PIN` | `5` | Deep-sleep button (GPIO5) |
 | `BLE_DEVICE_NAME` | `"ESP32S3-GPS"` | BLE advertised name |
 | `BLE_ADV_INTERVAL_MS` | `500` | Advertising interval |
 | `BLE_MTU_CHUNK_SIZE` | `20` | Default chunk size for BLE packets |
@@ -216,7 +216,7 @@ Power management utilities.
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| **ESP-IDF** | v5.5.5 | Pre-installed at `C:\Users\Mi\esp-idf-v5.5.5` |
+| **ESP-IDF** | v6.0.2 | Pre-installed at `~/esp/esp-idf-v6.0.2` |
 | **Python** | 3.14.6 | Used by `idf.py` |
 | **CMake** | 3.30.2 | Bundled with ESP-IDF |
 | **Ninja** | Bundled | Build system |

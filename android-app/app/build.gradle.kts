@@ -77,8 +77,6 @@ configurations.all {
 dependencies {
     implementation("no.nordicsemi.android:ble:2.7.5")
     implementation("no.nordicsemi.android:ble-common:2.7.5")
-    implementation("no.nordicsemi.android:ble-livedata:2.7.5")
-    implementation("no.nordicsemi.android:ble-ktx:2.7.5")
 
     implementation(platform("androidx.compose:compose-bom:2024.01.00"))
     implementation("androidx.compose.material3:material3")

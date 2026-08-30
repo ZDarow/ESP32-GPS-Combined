@@ -41,11 +41,14 @@ static void idle_task(void *arg) {
     }
 }
 
+// Накопительный fix: парсер дополняет его из каждой NMEA-строки,
+// поэтому не сбрасываем между вызовами (иначе GSA/GSV перезапишут valid).
+static gnss_fix_t s_gnss_fix;
+
 static void on_gps_line(const char *line, size_t len) {
-    gnss_fix_t fix;
-    if (nmea_parser_feed(line, len, &fix)) {
-        s_real_fix = fix.valid;
-        oled_display_update(&fix, ble_nus_is_connected());
+    if (nmea_parser_feed(line, (int)len, &s_gnss_fix)) {
+        s_real_fix = s_gnss_fix.valid;
+        oled_display_update(&s_gnss_fix, ble_nus_is_connected());
     }
 }
 

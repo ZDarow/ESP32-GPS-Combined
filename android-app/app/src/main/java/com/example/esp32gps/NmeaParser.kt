@@ -98,6 +98,7 @@ object NmeaParser {
 
         val course = parts.getOrNull(8)?.toDoubleOrNull() ?: previous.courseDeg
         val time = parts.getOrNull(1)
+        val date = parts.getOrNull(9)?.takeIf { it.isNotBlank() }
 
         return previous.copy(
             latitude = lat ?: previous.latitude,
@@ -105,6 +106,7 @@ object NmeaParser {
             speedKmh = speedKmh,
             courseDeg = course,
             timestampUtc = time ?: previous.timestampUtc,
+            dateUtc = date ?: previous.dateUtc,
             valid = isValid && lat != null && lon != null,
             rawNmea = raw
         )

@@ -4,11 +4,14 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 static const char *TAG = "nmea_parser";
 
 static double nmea_to_deg(double nmea_coord, bool is_lat)
 {
+    (void)is_lat;
     int deg = (int)(nmea_coord / 100.0);
     double min = nmea_coord - (deg * 100.0);
     return deg + min / 60.0;
@@ -76,7 +79,9 @@ bool nmea_parser_feed(const char *sentence, int len, gnss_fix_t *out_fix)
         return false;
     }
 
-    memset(out_fix, 0, sizeof(gnss_fix_t));
+    // Накопительный режим: парсер дополняет переданный fix, а не сбрасывает его.
+    // Сброс/обнуление выполняет вызывающая сторона (persistent fix в main.c),
+    // иначе GSA/GSV, идущие после RMC/GGA, перезаписывали бы флаг valid.
     out_fix->last_update_ms = esp_timer_get_time() / 1000;
 
     if (strncmp(sentence, "$GPGGA", 6) == 0 || strncmp(sentence, "$GNGGA", 6) == 0) {
@@ -127,7 +132,9 @@ bool nmea_parser_feed(const char *sentence, int len, gnss_fix_t *out_fix)
 
         if (status && *status == 'A') {
             out_fix->valid = true;
-            out_fix->type = GNSS_FIX_2D;
+            if (out_fix->type == GNSS_FIX_NONE) {
+                out_fix->type = GNSS_FIX_2D;
+            }
 
             double lat_val = nmea_parse_double(lat);
             double lon_val = nmea_parse_double(lon);
@@ -151,20 +158,20 @@ bool nmea_parser_feed(const char *sentence, int len, gnss_fix_t *out_fix)
     }
 
     if (strncmp(sentence, "$GPGSA", 6) == 0 || strncmp(sentence, "$GNGSA", 6) == 0) {
-        const char *mode = nmea_field(sentence, 2);
-        const char *fix_type = nmea_field(sentence, 3);
-        const char *hdop = nmea_field(sentence, 16);
+        // $GPGSA,<mode1>,<fix>,<sv1>...<sv12>,<pdop>,<hdop>,<vdop>
+        const char *fix_type = nmea_field(sentence, 2);   // 1=no fix, 2=2D, 3=3D
+        const char *hdop = nmea_field(sentence, 16);      // HDOP
 
-        if (fix_type && *fix_type >= '1' && *fix_type <= '3') {
-            out_fix->type = (gnss_fix_type_t)(*fix_type - '0');
+        // GSA fix-поле: 1=нет фикса, 2=2D, 3=3D. В gnss_fix_type_t: 0=NONE, 1=2D, 2=3D.
+        // Вычитаем 1, чтобы не выходить за диапазон enum (раньше писалось сырое значение 1..3).
+        if (fix_type && *fix_type >= '2' && *fix_type <= '3') {
+            out_fix->type = (gnss_fix_type_t)(*fix_type - '0' - 1);
             out_fix->valid = true;
         }
 
-        if (mode && *mode == 'A') {
-            out_fix->valid = true;
+        if (hdop) {
+            out_fix->hdop = nmea_parse_double(hdop);
         }
-
-        out_fix->hdop = nmea_parse_double(hdop);
 
         return true;
     }

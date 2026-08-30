@@ -17,7 +17,7 @@ void test_nmea_parser_feed_valid_rmc(void)
     bool result = nmea_parser_feed(sentence, strlen(sentence), &fix);
     TEST_ASSERT_TRUE(result);
     TEST_ASSERT_TRUE(fix.valid);
-    TEST_ASSERT_EQUAL(GNSS_FIX_3D, fix.type);
+    TEST_ASSERT_EQUAL(GNSS_FIX_2D, fix.type);
 }
 
 void test_nmea_parser_feed_invalid_checksum(void)
