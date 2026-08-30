@@ -71,8 +71,10 @@ void app_main(void) {
         xTaskCreate(ble_nus_send_task, "ble_send", 6144, s_ble_queue, 4, NULL);
     }
 
-    // Симулятор с низким приоритетом (2), чтобы BLE send имел приоритет
-    xTaskCreate(simulator_task, "simulator", 2048, NULL, 2, NULL);
+    // Симулятор отключён по запросу: шлёт fake NMEA (Мюнхен) при
+    // BLE-connected и отсутствии реального фикса, что мешает записи
+    // реального трека. Реальные координаты пойдут только от GPS-модуля.
+    // xTaskCreate(simulator_task, "simulator", 2048, NULL, 2, NULL);
     xTaskCreate(idle_task, "idle", 2048, NULL, 2, NULL);
 
     ESP_LOGI(TAG, "Ready. Advertising as '%s'", BLE_DEVICE_NAME);
