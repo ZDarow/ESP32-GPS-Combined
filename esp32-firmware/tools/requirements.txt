@@ -1,0 +1,15 @@
+# Зависимости утилит работы с GPS-модулем по последовательному порту:
+#   gps_configurator.py — запись конфигурации u-blox
+#   gnss_diag.py        — диагностика приёма (только чтение)
+#   gps_fix_monitor.py  — live-монитор фикса по NMEA
+#
+# Установка:  pip install -r esp32-firmware/tools/requirements.txt
+#
+# Для BLE-клиента зависимости отдельные: см. ble_receiver/requirements.txt
+pyserial>=3.5
+# Зрелые парсеры GNSS-протоколов (те же, что использует PyGPSClient).
+# Заменяют самописный разбор NMEA/UBX и устраняют хрупкую эвристику
+# определения чипсета (ошибочное "CASIC/AT6558" и т.п.).
+pynmeagps>=1.1.5
+pyubx2>=1.3.5
+pygnssutils>=1.2.6

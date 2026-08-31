@@ -6,7 +6,7 @@
 
 - **Прошивка**: `esp32-firmware/main/main.c` → `app_main()` — единственная точка входа. Инициализация строго в порядке: `gps_uart_init` → `nmea_parser_init` → `gps_uart_register_callback(on_gps_line)` → `gps_uart_task_start` → `power_manager_init` → `battery_adc_init` → `oled_display_init` → `ble_nus_init` → задачи `ble_nus_status_task` / `ble_nus_send_task` / `simulator_task` / `idle_task`.
 - **Android**: `android-app/app/src/main/java/com/example/esp32gps/` — `GpsApplication.kt` (инициализация OSMDroid user-agent), `MainActivity.kt` (Compose UI + BLE-сканер), `GpsBleManager.kt` (Nordic `BleManager`), `NmeaParser.kt`, `GpxLogger.kt`, `GpsTrackerViewModel.kt` (StateFlow, AndroidViewModel).
-- **Python**: `esp32-firmware/tools/ble_receiver/` — BLE-клиент для тестов (Windows/WinRT), `nmea_parser.py`, `track_logger.py`. Тесты: `esp32-firmware/tests/test_nmea_parser.py`.
+- **Python**: `esp32-firmware/tools/ble_receiver/` — BLE-клиент для тестов (Windows/WinRT), `nmea_parser.py`, `track_logger.py`. Утилиты работы с GPS-модулем по serial: `esp32-firmware/tools/gps_configurator.py` (запись конфигурации u-blox: UART, созвездия, SBAS, NAV5, частота, сохранение во flash) и `esp32-firmware/tools/gnss_diag.py` (диагностика только на чтение: автоопределение порта/скорости/чипсета, детектор цикла перезагрузки, тест независимости C/N0, оценка ослабления сигнала). Тесты: `esp32-firmware/tests/test_nmea_parser.py`.
 
 ## Технологический стек (зафиксирован в конфигах, не предположения)
 
@@ -40,16 +40,21 @@ cd android-app
 ### Python
 ```bash
 cd esp32-firmware
+pip install -r tools/requirements.txt     # pyserial для gps_configurator / gnss_diag
 ruff check tools/ble_receiver/          # линтер (требует ruff в PATH)
-python -m pytest tests/test_nmea_parser.py -v   #单元-тесты NMEA-парсера
+python -m pytest tests/test_nmea_parser.py -v   # юнит-тесты NMEA-парсера
 markdownlint '**/*.md' || true         # линтер markdown (CI)
+
+python tools/gnss_diag.py                        # диагностика модуля, автопоиск порта
+python tools/gnss_diag.py --port /dev/ttyUSB0 --baud 9600 --secs 60
+python tools/gps_configurator.py --help          # запись конфигурации u-blox
 ```
 
 ## CI (.github/workflows/)
 
-- `ci.yml`: `ruff check .` + `markdownlint '**/*.md'` (Python 3.11).
+- `ci.yml`: `ruff check .` + `markdownlint '**/*.md'` + `pytest tests/test_nmea_parser.py` (Python 3.11). Шаг markdownlint завершается через `|| true`, поэтому его ошибки не валят сборку; `ruff check .` и pytest — валят.
 - `build.yml`: три job — `build-esp32` (IDF v6.0.2, `idf.py build`), `build-android` (JDK 17 Temurin, `./gradlew assembleDebug`, APK артефакт), `lint` (ruff + detekt).
-- **Порядок проверок**: `ruff` → `detekt` → `idf.py build` → `./gradlew assembleDebug`. CI не запускает pytest.
+- **Порядок проверок**: `ruff` → `markdownlint` → `pytest` (в `ci.yml`), затем `detekt` → `idf.py build` → `./gradlew assembleDebug` (в `build.yml`).
 
 ## Важные особенности и подводные камни
 
