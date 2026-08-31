@@ -54,3 +54,4 @@ secrets.*
 
 # Личные настройки VS Code (не коммитим)
 .vscode/settings.json
+*.gpx
